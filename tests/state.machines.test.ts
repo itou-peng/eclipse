@@ -1,4 +1,4 @@
-import { assign, createMachine, interpret } from 'xstate';
+import { assign, createMachine, interpret, raise, send } from 'xstate';
 
 describe('Xstate Machine', () => {
   test('Get the initial state instance of a machine.', () => {
@@ -486,6 +486,74 @@ describe('Xstate Machine', () => {
           },
         },
       });
+    });
+  });
+  describe('action', () => {
+    test('send', () => {
+      const lazyStubbornMachine = createMachine({
+        id: 'stubborn',
+        initial: 'inactive',
+        states: {
+          inactive: {
+            on: {
+              TOGGLE: {
+                target: 'active',
+                // send the TOGGLE event again to the service
+                actions: send('TOGGLE'),
+              },
+            },
+          },
+          active: {
+            on: {
+              TOGGLE: { target: 'inactive' },
+            },
+          },
+        },
+        predictableActionArguments: true,
+      });
+
+      const nextState = lazyStubbornMachine.transition('inactive', {
+        type: 'TOGGLE',
+      });
+      expect(nextState.value).toEqual('active');
+      expect(nextState.actions[0].type).toEqual('xstate.send');
+      expect(nextState.actions[0]['event']).toEqual({ type: 'TOGGLE' });
+      // The service will proceed to send itself the { type: 'TOGGLE' } event.
+    });
+    test('raise', () => {
+      const raiseActionDemo = createMachine({
+        id: 'raise',
+        initial: 'entry',
+        states: {
+          entry: {
+            on: {
+              STEP: {
+                target: 'middle',
+              },
+              RAISE: {
+                target: 'middle',
+                // immediately invoke the NEXT event for 'middle'
+                actions: raise('NEXT'),
+              },
+            },
+          },
+          middle: {
+            on: {
+              NEXT: { target: 'last' },
+            },
+          },
+          last: {
+            on: {
+              RESET: { target: 'entry' },
+            },
+          },
+        },
+        predictableActionArguments: true,
+      });
+      const service = interpret(raiseActionDemo);
+      service.start();
+      const state = service.send('RAISE');
+      expect(state.value).toEqual('last');
     });
   });
 });
