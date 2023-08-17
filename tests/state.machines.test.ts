@@ -556,4 +556,63 @@ describe('Xstate Machine', () => {
       expect(state.value).toEqual('last');
     });
   });
+
+  describe('Guards', () => {
+    test('use guard', () => {
+      const searchValid = (context, event) => {
+        return context.canSearch && event.query && event.query.length > 0;
+      };
+
+      const searchMachine = createMachine(
+        {
+          id: 'search',
+          initial: 'idle',
+          context: {
+            canSearch: true,
+          },
+          states: {
+            idle: {
+              on: {
+                SEARCH: [
+                  {
+                    target: 'searching',
+                    // Only transition to 'searching' if the guard (cond) evaluates to true
+                    cond: searchValid,
+                  },
+                  { target: '.invalid' },
+                ],
+              },
+              initial: 'normal',
+              states: {
+                normal: {},
+                invalid: {},
+              },
+            },
+            searching: {
+              type: 'final',
+            },
+            searchError: {
+              type: 'final',
+            },
+          },
+          predictableActionArguments: true,
+        },
+        {
+          guards: {
+            searchValid, // optional, if the implementation doesn't change
+          },
+        },
+      );
+      const service = interpret(searchMachine);
+      service.start();
+      const init = service.initialState;
+      expect(init.value).toEqual({ idle: 'normal' });
+      const state = service.send('SEARCH');
+      expect(state.value).toEqual({ idle: 'invalid' });
+      const final = service.send('SEARCH', { query: 'HELLO' });
+      expect(final.value).toEqual('searching');
+      expect(final.done).toBeTruthy();
+      service.stop();
+    });
+  });
 });
