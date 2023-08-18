@@ -1,4 +1,4 @@
-import { assign, createMachine, interpret, raise, send } from 'xstate';
+import { assign, createMachine, interpret, raise, send, State } from 'xstate';
 
 describe('Xstate Machine', () => {
   test('Get the initial state instance of a machine.', () => {
@@ -613,6 +613,68 @@ describe('Xstate Machine', () => {
       expect(final.value).toEqual('searching');
       expect(final.done).toBeTruthy();
       service.stop();
+    });
+  });
+  describe('Context', () => {
+    test('use context', () => {
+      // Action to increment the context amount
+      const addWater = assign({
+        amount: (context) => context['amount'] + 1,
+      });
+
+      // Guard to check if the glass is full
+      function glassIsFull(context: any) {
+        return context.amount >= 10;
+      }
+
+      const glassMachine = createMachine(
+        {
+          id: 'glass',
+          // the initial context (extended state) of the statechart
+          context: {
+            amount: 0,
+          },
+          initial: 'empty',
+          states: {
+            empty: {
+              on: {
+                FILL: {
+                  target: 'filling',
+                  actions: 'addWater',
+                },
+              },
+            },
+            filling: {
+              // Transient transition
+              always: {
+                target: 'full',
+                cond: 'glassIsFull',
+              },
+              on: {
+                FILL: {
+                  target: 'filling',
+                  actions: 'addWater',
+                },
+              },
+            },
+            full: {
+              type: 'final',
+            },
+          },
+          predictableActionArguments: true,
+        },
+        {
+          actions: { addWater },
+          guards: { glassIsFull },
+        },
+      );
+      const service = interpret(glassMachine);
+      service.start();
+      let state: State<any>;
+      for (let i = 0; i < 10; i++) {
+        state = service.send('FILL');
+      }
+      expect(state.value).toEqual('full');
     });
   });
 });
