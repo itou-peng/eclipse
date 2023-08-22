@@ -677,4 +677,63 @@ describe('Xstate Machine', () => {
       expect(state.value).toEqual('full');
     });
   });
+  describe('invoke', () => {
+    test('promises', () => {
+      const fetchUser = async () =>
+        Promise.resolve({
+          name: 'Itou Ng',
+          location: 'China',
+        });
+
+      const userMachine = createMachine({
+        id: 'user',
+        initial: 'idle',
+        context: {
+          userId: 42,
+          user: undefined,
+          error: undefined,
+        },
+        predictableActionArguments: true,
+        states: {
+          idle: {
+            on: {
+              FETCH: { target: 'loading' },
+            },
+          },
+          loading: {
+            invoke: {
+              id: 'getUser',
+              src: () => fetchUser(),
+              onDone: {
+                target: 'success',
+                actions: assign({ user: (context, event) => event.data }),
+              },
+              onError: {
+                target: 'failure',
+                actions: assign({ error: (context, event) => event.data }),
+              },
+            },
+          },
+          success: {
+            type: 'final',
+          },
+          failure: {
+            on: {
+              RETRY: { target: 'loading' },
+            },
+          },
+        },
+      });
+      const service = interpret(userMachine)
+        .onTransition((state) => {
+          if (state.value === 'success') {
+            console.log(state.context);
+            expect(state.context.user.name).toEqual('Itou Ng');
+            expect(state.context.user.location).toEqual('China');
+          }
+        })
+        .start();
+      service.send('FETCH');
+    });
+  });
 });
