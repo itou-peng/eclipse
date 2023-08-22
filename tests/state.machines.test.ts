@@ -736,4 +736,66 @@ describe('Xstate Machine', () => {
       service.send('FETCH');
     });
   });
+
+  describe('history', () => {
+    test('use history', () => {
+      const fanMachine = createMachine({
+        id: 'fan',
+        initial: 'fanOff',
+        predictableActionArguments: true,
+        states: {
+          fanOff: {
+            on: {
+              // transitions to history state
+              POWER: { target: 'fanOn.hist' },
+            },
+          },
+          fanOn: {
+            initial: 'first',
+            states: {
+              first: {
+                on: {
+                  SWITCH: { target: 'second' },
+                },
+              },
+              second: {
+                on: {
+                  SWITCH: { target: 'third' },
+                },
+              },
+              third: {},
+
+              // shallow history state
+              hist: {
+                type: 'history',
+                history: 'shallow', // optional; default is 'shallow'
+              },
+            },
+            on: {
+              POWER: { target: 'fanOff' },
+            },
+          },
+        },
+      });
+      const firstState = fanMachine.transition(fanMachine.initialState, {
+        type: 'POWER',
+      });
+      expect(firstState.value).toEqual({
+        fanOn: 'first',
+      });
+      const secondState = fanMachine.transition(firstState, { type: 'SWITCH' });
+      expect(secondState.value).toEqual({
+        fanOn: 'second',
+      });
+      const thirdState = fanMachine.transition(secondState, { type: 'POWER' });
+      expect(thirdState.value).toEqual('fanOff');
+      expect(thirdState.history.value).toEqual({
+        fanOn: 'second',
+      });
+      const fourthState = fanMachine.transition(thirdState, { type: 'POWER' });
+      expect(fourthState.value).toEqual({
+        fanOn: 'second',
+      });
+    });
+  });
 });
