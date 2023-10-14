@@ -1,7 +1,7 @@
 {
   "name": "@eclipse/source",
   "version": "0.0.0",
-  "description": "project-template",
+  "description": "engine",
   "homepage": "https://github.com/itou/eclipse",
   "main": "dist/index.js",
   "author": "itou",
