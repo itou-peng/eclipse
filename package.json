@@ -1,38 +1,40 @@
 {
-  "name": "project-template",
+  "name": "@eclipse/source",
   "version": "0.0.0",
   "description": "project-template",
-  "homepage": "https://github.com/itou-peng/project-template",
+  "homepage": "https://github.com/itou/eclipse",
   "main": "dist/index.js",
   "author": "itou",
-  "scripts": {
-    "clean": "rimraf dist",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.test.ts\"",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.test.ts\" --fix",
-    "build": "yarn run clean && tsc -p tsconfig.build.json && tsc-alias",
-    "prepare": "husky install",
-    "test": "jest"
-  },
+  "scripts": {},
   "dependencies": {
+    "tslib": "^2.3.0",
     "xstate": "^4.38.2"
   },
   "devDependencies": {
+    "@nx/eslint-plugin": "16.10.0",
+    "@nx/jest": "^16.10.0",
+    "@nx/js": "^16.10.0",
+    "@nx/linter": "^16.10.0",
+    "@nx/workspace": "^16.10.0",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.2",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
-    "eslint": "^8.45.0",
+    "eslint": "~8.46.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "husky": "^8.0.3",
     "jest": "^29.6.2",
+    "jest-environment-node": "^29.4.1",
+    "nx": "16.10.0",
+    "nx-cloud": "latest",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.1",
     "ts-jest": "^29.1.1",
-    "tsc-alias": "^1.8.7",
-    "tslint": "^6.1.3",
-    "typescript": "^5.0.4"
+    "ts-node": "10.9.1",
+    "typescript": "^5.0.4",
+    "verdaccio": "^5.0.4"
   },
   "jest": {
     "verbose": true,
@@ -54,5 +56,24 @@
     "/dist",
     "package.json",
     "README.md"
-  ]
+  ],
+  "nx": {
+    "targets": {
+      "clean": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "test": {
+        "outputs": [
+          "{projectRoot}/coverage"
+        ]
+      }
+    }
+  }
 }
