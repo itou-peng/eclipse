@@ -2,6 +2,9 @@
 
 state machine &amp; rule engine
 
+## Command
+
+`npx nx run-many -t {script: lint, build, ...}`
 
 ---
 
