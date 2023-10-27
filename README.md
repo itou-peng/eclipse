@@ -30,6 +30,14 @@ new Workflow({
 }).listen();
 ```
 
+On the relevant business logic unit, just declare the trigger event, pass pre-defined parameters, workflow will be done 🎊.
+
+```typescript
+app.trigger('<REPLACE_WITH_EVENT_NAME>', {
+  ...
+});
+```
+
 ## Command
 
 `npx nx run-many -t {script: lint, build, ...}`

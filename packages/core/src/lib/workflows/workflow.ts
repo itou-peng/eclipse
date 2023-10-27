@@ -1,4 +1,5 @@
 import { Trigger } from './trigger';
+import { Worker } from '../workers';
 
 type RecordToObject<U, T extends Record<string, U>> = {
   [K in keyof T]: T[K];
@@ -28,6 +29,7 @@ export class Workflow<
   TConnections extends Record<string, TConnectionType>,
 > {
   options: WorkflowOptions<TEventData, TConnectionType, TConnections>;
+  worker: Worker<TEventData, TConnectionType, TConnections> | undefined;
 
   constructor(
     options: WorkflowOptions<TEventData, TConnectionType, TConnections>,
@@ -56,6 +58,10 @@ export class Workflow<
       TConnectionType,
       TConnections
     >;
+  }
+
+  init() {
+    this.worker = new Worker(this, this.options);
   }
 
   async listen() {}
