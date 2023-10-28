@@ -27,7 +27,7 @@ new Workflow({
       await upsertIssue(data);
     }
   }
-}).listen();
+});
 ```
 
 On the relevant business logic unit, just declare the trigger event, pass pre-defined parameters, workflow will be done 🎊.

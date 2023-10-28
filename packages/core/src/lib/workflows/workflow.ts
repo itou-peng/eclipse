@@ -1,39 +1,18 @@
 import { Trigger } from './trigger';
 import { Worker } from '../workers';
 
-type RecordToObject<U, T extends Record<string, U>> = {
-  [K in keyof T]: T[K];
-};
-
-export type WorkflowOptions<
-  TEventData,
-  TConnectionType,
-  TConnections extends Record<string, TConnectionType>,
-> = {
+export type WorkflowOption<TEventData> = {
   id: string;
   name: string;
-  apiKey?: string;
-  endpoint?: string;
   // logLevel?: LogLevel;
   trigger: Trigger<TEventData>;
-  connections?: TConnections;
-  run: (
-    event: TEventData,
-    lib: RecordToObject<TConnectionType, TConnections>,
-  ) => Promise<void>;
+  run: (event: TEventData) => Promise<void>;
 };
 
-export class Workflow<
-  TEventData,
-  TConnectionType,
-  TConnections extends Record<string, TConnectionType>,
-> {
-  options: WorkflowOptions<TEventData, TConnectionType, TConnections>;
-  worker: Worker<TEventData, TConnectionType, TConnections> | undefined;
+export class Workflow<TEventData> {
+  options: WorkflowOption<TEventData>;
 
-  constructor(
-    options: WorkflowOptions<TEventData, TConnectionType, TConnections>,
-  ) {
+  constructor(options: WorkflowOption<TEventData>) {
     this.options = options;
   }
 
@@ -45,29 +24,12 @@ export class Workflow<
     return this.options.name;
   }
 
-  get endpoint() {
-    return this.options.endpoint;
-  }
-
   get trigger() {
     return this.options.trigger;
   }
 
-  private get lib(): RecordToObject<TConnectionType, TConnections> {
-    return this.options.connections as RecordToObject<
-      TConnectionType,
-      TConnections
-    >;
-  }
-
-  init() {
-    this.worker = new Worker(this, this.options);
-  }
-
-  async listen() {}
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async run(trigger: Trigger<TEventData>) {
-    return this.options.run({} as TEventData, this.lib);
+  async run(trigger: Trigger<TEventData>) {
+    const worker = new Worker(this, this.options);
+    return worker.run(trigger.data());
   }
 }

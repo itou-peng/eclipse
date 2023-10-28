@@ -1,17 +1,17 @@
-import { Workflow, WorkflowOptions } from '../workflows';
+import { Workflow, WorkflowOption } from '../workflows';
 
-export class Worker<
-  TEventData,
-  TConnectionType,
-  TConnections extends Record<string, TConnectionType>,
-> {
-  workflow: Workflow<TEventData, TConnectionType, TConnections>;
-  options: WorkflowOptions<TEventData, TConnectionType, TConnections>;
+export class Worker<TEventData> {
+  workflow: Workflow<TEventData>;
+  options: WorkflowOption<TEventData>;
   constructor(
-    workflow: Workflow<TEventData, TConnectionType, TConnections>,
-    options: WorkflowOptions<TEventData, TConnectionType, TConnections>,
+    workflow: Workflow<TEventData>,
+    options: WorkflowOption<TEventData>,
   ) {
     this.workflow = workflow;
     this.options = options;
+  }
+
+  async run(data: TEventData) {
+    return this.options.run(data);
   }
 }
