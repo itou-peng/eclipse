@@ -1,12 +1,10 @@
-import { Trigger } from './trigger';
 import { Worker } from '../workers';
 
 export type WorkflowOption<TEventData> = {
   id: string;
   name: string;
   // logLevel?: LogLevel;
-  trigger: Trigger<TEventData>;
-  run: (event: TEventData) => Promise<void>;
+  run: (data: TEventData) => Promise<void> | void;
 };
 
 export class Workflow<TEventData> {
@@ -24,12 +22,8 @@ export class Workflow<TEventData> {
     return this.options.name;
   }
 
-  get trigger() {
-    return this.options.trigger;
-  }
-
-  async run(trigger: Trigger<TEventData>) {
+  async run(data: TEventData) {
     const worker = new Worker(this, this.options);
-    return worker.run(trigger.data());
+    return worker.run(data);
   }
 }

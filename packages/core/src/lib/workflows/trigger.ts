@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type Trigger<TEventData = void> = {
+export interface Trigger<TEventData = unknown> {
   name: string;
-  data: () => TEventData;
-};
+  data: TEventData;
+}
